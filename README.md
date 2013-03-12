@@ -3,6 +3,8 @@ sqscmd
 
 Helper for using SQS simply in bash scripting. Makes assumptions, like expecting your AWS credentials to be in `~/.s3cfg`.
 
+    sudo npm install -g https://github.com/mapbox/sqscmd/tarball/master
+
     Usage:
       sqscmd <queue> get
       sqscmd <queue> put <data>
