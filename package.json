@@ -1,0 +1,10 @@
+{
+    "name": "sqscmd",
+    "version": "0.0.1",
+    "description": "Helper for using SQS simply in bash scripting.",
+    "private": true,
+    "dependencies": { "aws-lib": "0.2.x" },
+    "main": "./sqscmd",
+    "bin": { "sqscmd": "./sqscmd" },
+    "engines": { "node": ">= 0.6.x" }
+}

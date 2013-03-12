@@ -1,0 +1,53 @@
+#!/usr/bin/env node
+
+try {
+    var s3cfg = require('fs').readFileSync(require('path').join(process.env.HOME, '.s3cfg'), 'utf8');
+    var awsKey = s3cfg.match(/access_key = (.*)/)[1];
+    var awsSecret = s3cfg.match(/secret_key = (.*)/)[1];
+} catch(err) {
+    console.warn('Could not read AWS credentials from .s3cfg.');
+    process.exit(1);
+}
+
+var argv = process.argv;
+var queue = argv[2];
+var action = argv[3];
+var data = argv[4];
+if (!queue || !action || (['put','del'].indexOf(action) >= 0 && !data)) {
+    console.warn('Usage:');
+    console.warn('  sqscmd <queue> get');
+    console.warn('  sqscmd <queue> put <data>');
+    console.warn('  sqscmd <queue> del <handle>');
+    console.warn('Example:');
+    console.warn('  sqscmd 185391239583/testing put "Hello world"');
+    process.exit(1);
+}
+
+var aws = require('aws-lib');
+var sqs = aws.createSQSClient(awsKey, awsSecret, { 'path': '/' + queue });
+
+switch (action) {
+case 'get':
+    sqs.call('ReceiveMessage', { 'AttributeName': 'All' }, function(err, res) {
+        if (err || res.Error) throw new Error(err || res.Error.Message);
+        if (res.ReceiveMessageResult &&
+            res.ReceiveMessageResult.Message &&
+            res.ReceiveMessageResult.Message.Body)
+            console.log('%s %s', res.ReceiveMessageResult.Message.ReceiptHandle, res.ReceiveMessageResult.Message.Body);
+        process.exit(0);
+    });
+    break;
+case 'put':
+    sqs.call('SendMessage', { MessageBody: data }, function(err) {
+        if (err) throw err;
+        process.exit(0);
+    });
+    break;
+case 'del':
+    sqs.call('DeleteMessage', { ReceiptHandle: data }, function(err) {
+        if (err) throw err;
+        process.exit(0);
+    });
+    break;
+}
+
