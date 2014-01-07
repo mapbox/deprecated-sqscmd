@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 
-try {
-    var s3cfg = require('fs').readFileSync(require('path').join(process.env.HOME, '.s3cfg'), 'utf8');
-    var awsKey = s3cfg.match(/access_key = (.*)/)[1];
-    var awsSecret = s3cfg.match(/secret_key = (.*)/)[1];
-} catch(err) {
-    console.warn('Could not read AWS credentials from .s3cfg.');
-    process.exit(1);
+var awsKey, awsSecret;
+
+if (process.env.AWSKEY && process.env.AWSSECRET) {
+    awsKey = process.env.AWSKEY;
+    awsSecret = process.env.AWSSECRET;
+} else {
+    try {
+        var s3cfg = require('fs').readFileSync(require('path').join(process.env.HOME, '.s3cfg'), 'utf8');
+        awsKey = s3cfg.match(/access_key = (.*)/)[1];
+        awsSecret = s3cfg.match(/secret_key = (.*)/)[1];
+    } catch(err) {
+        console.warn('Could not read AWS credentials from .s3cfg or environment.');
+        process.exit(1);
+    }
 }
 
 var argv = process.argv;
